@@ -22,14 +22,7 @@ public class PriceMergerTest extends Assert {
     }
 
     @Test
-    public void mergeTest() {
-        testInsertEmptyTables();
-        testInsertWithoutIntersection();
-        testInsertWithIntersection();
-        testInsertInsidePrice();
-    }
-
-    private void testInsertEmptyTables() {
+    public void testInsertEmptyTables() {
         HashSet<Price> currentPrices = new HashSet<>();
         HashSet<Price> newPrices = new HashSet<>();
         HashSet<Price> emptySet = new HashSet<>();
@@ -61,7 +54,8 @@ public class PriceMergerTest extends Assert {
         assertEquals(expected, actual);
     }
 
-    private void testInsertWithoutIntersection() {
+    @Test
+    public void testInsertWithoutIntersection() {
         HashSet<Price> currentPrices = new HashSet<>();
         HashSet<Price> newPrices = new HashSet<>();
 
@@ -89,7 +83,8 @@ public class PriceMergerTest extends Assert {
         assertEquals(expected, actual);
     }
 
-    private void testInsertInsidePrice() {
+    @Test
+    public void testInsertInsidePrice() {
         HashSet<Price> currentPrices = new HashSet<>();
         HashSet<Price> newPrices = new HashSet<>();
 
@@ -113,7 +108,68 @@ public class PriceMergerTest extends Assert {
         assertEquals(expected, actual);
     }
 
-    private void testInsertWithIntersection() {
+    @Test
+    public void testInsertOutsidePrice() {
+        HashSet<Price> currentPrices = new HashSet<>();
+        HashSet<Price> newPrices = new HashSet<>();
+
+        Price box1_1_from10_to20 = new Price(CODE_BOX, 1, 1, getDefaultDate(10), getDefaultDate(20), 10);
+        Price box1_1_from5_to25 = new Price(CODE_BOX, 1, 1, getDefaultDate(5), getDefaultDate(25), 100);
+        Price box1_2 = new Price(CODE_BOX, 2, 1, getDefaultDate(1), getDefaultDate(30), 20);
+
+        currentPrices.add(box1_1_from10_to20);
+        currentPrices.add(box1_2);
+        newPrices.add(box1_1_from5_to25);
+
+        HashSet<Price> expected = new HashSet<>();
+        expected.add(box1_2);
+        expected.add(box1_1_from5_to25);
+
+        Collection<Price> actual = merger.merge(currentPrices, newPrices);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testInsertWithIntersection() {
+        HashSet<Price> currentPrices = new HashSet<>();
+        HashSet<Price> newPrices = new HashSet<>();
+        HashSet<Price> expected = new HashSet<>();
+
+        Price box1_1_from10_to15 = new Price(CODE_BOX, 1, 1, getDefaultDate(10), getDefaultDate(15), 10);
+        Price box1_1_from5_to11 = new Price(CODE_BOX, 1, 1, getDefaultDate(5), getDefaultDate(11), 10);
+        Price box1_1_from12_to20 = new Price(CODE_BOX, 1, 1, getDefaultDate(12), getDefaultDate(20), 100);
+
+        currentPrices.add(box1_1_from10_to15);
+        newPrices.add(box1_1_from5_to11);
+        newPrices.add(box1_1_from12_to20);
+
+        expected.add(box1_1_from5_to11);
+        expected.add(box1_1_from12_to20);
+
+        Collection<Price> actual = merger.merge(currentPrices, newPrices);
+        assertEquals(expected, actual);
+
+        currentPrices.add(new Price(CODE_BOX, 1, 1, getDefaultDate(18), getDefaultDate(25), 10));
+        currentPrices.add(new Price(CODE_BOX, 2, 1, getDefaultDate(18), getDefaultDate(25), 10));
+        newPrices.add(new Price(CODE_BOX, 2, 1, getDefaultDate(10), getDefaultDate(20), 10));
+        newPrices.add(new Price(CODE_BOX, 2, 1, getDefaultDate(24), getDefaultDate(30), 10));
+        expected.add(new Price(CODE_BOX, 1, 1, getDefaultDate(21), getDefaultDate(25), 10));
+        expected.add(new Price(CODE_BOX, 2, 1, getDefaultDate(18), getDefaultDate(30), 10));
+
+        actual = merger.merge(currentPrices, newPrices);
+        assertEquals(expected, actual);
+
+        currentPrices.add(new Price(CODE_MILK, 1, 1, getDefaultDate(18), getDefaultDate(25), 10));
+        currentPrices.add(new Price(CODE_MILK, 2, 1, getDefaultDate(18), getDefaultDate(25), 10));
+        newPrices.add(new Price(CODE_MILK, 1, 1, getDefaultDate(24), getDefaultDate(30), 10));
+        newPrices.add(new Price(CODE_MILK, 2, 1, getDefaultDate(24), getDefaultDate(30), 100));
+
+        expected.add(new Price(CODE_MILK, 1, 1, getDefaultDate(18), getDefaultDate(30), 10));
+        expected.add(new Price(CODE_MILK, 2, 1, getDefaultDate(18), getDefaultDate(23), 10));
+        expected.add(new Price(CODE_MILK, 2, 1, getDefaultDate(24), getDefaultDate(30), 100));
+
+        actual = merger.merge(currentPrices, newPrices);
+        assertEquals(expected, actual);
 
     }
 
