@@ -30,24 +30,17 @@ public class PriceMergerTest extends Assert {
     }
 
     private void testInsertEmptyTables() {
-        Price.PriceBuilder priceBuilder = new Price.PriceBuilder();
         HashSet<Price> currentPrices = new HashSet<>();
         HashSet<Price> newPrices = new HashSet<>();
+        HashSet<Price> emptySet = new HashSet<>();
 
-        priceBuilder
-                .setProductCode(CODE_BOX)
-                .setDepart(1)
-                .setNumber(1)
-                .setBegin(getDate(DEFAULT_YEAR, Calendar.DECEMBER, 1))
-                .setEnd(getDate(DEFAULT_YEAR + 1, Calendar.JANUARY, 5));
+        Price box1_1 = new Price(CODE_BOX, 1, 1,
+                getDate(DEFAULT_YEAR, Calendar.DECEMBER, 1), getDate(DEFAULT_YEAR + 1, Calendar.JANUARY, 5), 10);
+        Price box1_1_otherDate = new Price(CODE_BOX, 1, 1,
+                getDate(DEFAULT_YEAR + 1, Calendar.JANUARY, 10), getDate(DEFAULT_YEAR + 1, Calendar.JANUARY, 15), 50);
+        Price milk1_1 = new Price(CODE_MILK, 1, 1,
+                getDate(DEFAULT_YEAR + 1, Calendar.JANUARY, 10), getDate(DEFAULT_YEAR + 1, Calendar.JANUARY, 15), 50);
 
-        Price box1_1 = priceBuilder.build();
-        priceBuilder
-                .setBegin(getDate(DEFAULT_YEAR + 1, Calendar.JANUARY, 10))
-                .setEnd(getDate(DEFAULT_YEAR + 1, Calendar.JANUARY, 15));
-        Price box1_1_otherDate = priceBuilder.build();
-        priceBuilder.setProductCode(CODE_MILK);
-        Price milk1_1 = priceBuilder.build();
         newPrices.add(box1_1);
         newPrices.add(box1_1_otherDate);
         newPrices.add(milk1_1);
@@ -60,39 +53,27 @@ public class PriceMergerTest extends Assert {
         expected.add(box1_1_otherDate);
         expected.add(box1_1);
         expected.add(milk1_1);
-        Collection<Price> actual = merger.merge(new HashSet<>(), newPrices);
+
+        Collection<Price> actual = merger.merge(emptySet, newPrices);
         assertEquals(expected, actual);
 
-        actual = merger.merge(currentPrices, new HashSet<>());
+        actual = merger.merge(currentPrices, emptySet);
         assertEquals(expected, actual);
     }
 
     private void testInsertWithoutIntersection() {
-        Price.PriceBuilder priceBuilder = new Price.PriceBuilder();
         HashSet<Price> currentPrices = new HashSet<>();
         HashSet<Price> newPrices = new HashSet<>();
-        priceBuilder
-                .setProductCode(CODE_BOX)
-                .setDepart(1)
-                .setNumber(1)
-                .setBegin(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 1))
-                .setEnd(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 5));
 
-        Price box1_1 = priceBuilder.build();
-        priceBuilder.setDepart(2);
-        Price box2_1 = priceBuilder.build();
+        Price box1_1 = new Price(CODE_BOX, 1, 1, getDefaultDate(1), getDefaultDate(5), 1);
+        Price box2_1 = new Price(CODE_BOX, 1, 2, getDefaultDate(1), getDefaultDate(5), 1);
+        Price box3_1 = new Price(CODE_BOX, 1, 3, getDefaultDate(1), getDefaultDate(5), 100);
+        Price milk1_1 = new Price(CODE_MILK, 1, 1, getDefaultDate(1), getDefaultDate(5), 1);
+        Price box1_1_otherDate = new Price(CODE_BOX, 1, 1, getDefaultDate(10), getDefaultDate(15), 10);
+
         currentPrices.add(box1_1);
         currentPrices.add(box2_1);
 
-        priceBuilder.setDepart(3);
-        Price box3_1 = priceBuilder.build();
-        priceBuilder.setDepart(1);
-        priceBuilder.setProductCode(CODE_MILK);
-        Price milk1_1 = priceBuilder.build();
-        priceBuilder.setProductCode(CODE_BOX);
-        priceBuilder.setBegin(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 10));
-        priceBuilder.setEnd(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 15));
-        Price box1_1_otherDate = priceBuilder.build();
         newPrices.add(box3_1);
         newPrices.add(milk1_1);
         newPrices.add(box1_1_otherDate);
@@ -109,36 +90,20 @@ public class PriceMergerTest extends Assert {
     }
 
     private void testInsertInsidePrice() {
-        Price.PriceBuilder priceBuilder = new Price.PriceBuilder();
         HashSet<Price> currentPrices = new HashSet<>();
         HashSet<Price> newPrices = new HashSet<>();
-        priceBuilder
-                .setProductCode(CODE_BOX)
-                .setDepart(1)
-                .setNumber(1)
-                .setBegin(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 1))
-                .setEnd(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 30));
-        Price box1_1 = priceBuilder.build();
-        priceBuilder.setNumber(2);
-        Price box1_2 = priceBuilder.build();
-        priceBuilder
-                .setNumber(1)
-                .setBegin(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 10))
-                .setEnd(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 20));
-        Price box1_1_from10_to20 = priceBuilder.build();
+
+        Price box1_1 = new Price(CODE_BOX, 1, 1, getDefaultDate(1), getDefaultDate(30), 1);
+        Price box1_1_from1_to9 = new Price(CODE_BOX, 1, 1, getDefaultDate(1), getDefaultDate(9), 1);
+        Price box1_1_from21_to30 = new Price(CODE_BOX, 1, 1, getDefaultDate(21), getDefaultDate(30), 1);
+        Price box1_1_from10_to20 = new Price(CODE_BOX, 1, 1, getDefaultDate(10), getDefaultDate(20), 500);
+        Price box1_2 = new Price(CODE_BOX, 2, 1, getDefaultDate(1), getDefaultDate(30), 20);
+
         currentPrices.add(box1_1);
         currentPrices.add(box1_2);
         newPrices.add(box1_1_from10_to20);
 
         HashSet<Price> expected = new HashSet<>();
-        priceBuilder
-                .setBegin(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 1))
-                .setEnd(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 9));
-        Price box1_1_from1_to9 = priceBuilder.build();
-        priceBuilder
-                .setBegin(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 21))
-                .setEnd(getDate(DEFAULT_YEAR, DEFAULT_MONTH, 30));
-        Price box1_1_from21_to30 = priceBuilder.build();
         expected.add(box1_2);
         expected.add(box1_1_from10_to20);
         expected.add(box1_1_from21_to30);
@@ -150,6 +115,10 @@ public class PriceMergerTest extends Assert {
 
     private void testInsertWithIntersection() {
 
+    }
+
+    private Date getDefaultDate(int day) {
+        return getDate(DEFAULT_YEAR, DEFAULT_MONTH, day);
     }
 
     private Date getDate(int year, int month, int day) {
