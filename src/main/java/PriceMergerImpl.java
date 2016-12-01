@@ -62,9 +62,9 @@ public class PriceMergerImpl implements PriceMerger {
         }
         Date begin = prices.get(0).getBegin();
         Price lastPrice = prices.get(0);
-        for (Price price : prices) {
-            if (price.getValue() != lastPrice.getValue() ||
-                    (!price.getBegin().equals(lastPrice.getEnd()) && !price.equals(lastPrice))) {
+        for (int i = 1; i < prices.size(); i++) {
+            Price price = prices.get(i);
+            if (!price.canMergedWith(lastPrice)) {
                 result.add(new Price(lastPrice.getProductCode(), lastPrice.getNumber(), lastPrice.getDepart(),
                         begin, lastPrice.getEnd(), lastPrice.getValue()));
                 begin = price.getBegin();

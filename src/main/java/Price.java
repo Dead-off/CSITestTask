@@ -73,4 +73,10 @@ public class Price {
         result = 31 * result + (int) (value ^ (value >>> 32));
         return result;
     }
+
+    public boolean canMergedWith(Price lastPrice) {
+        boolean valuesEquals = lastPrice.getValue() == getValue();
+        boolean dateEquals = getBegin().equals(lastPrice.getEnd()) || getEnd().equals(lastPrice.getBegin());
+        return valuesEquals && dateEquals;
+    }
 }
