@@ -3,16 +3,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Set;
 
 public class PriceMergerTest extends Assert {
 
     private static final String CODE_BOX = "box";
     private static final String CODE_MILK = "milk";
     private final int DEFAULT_YEAR = 2016;
-    private final int DEFAULT_MONTH = Calendar.APRIL;
 
     private PriceMerger merger;
 
@@ -47,7 +46,7 @@ public class PriceMergerTest extends Assert {
         expected.add(box1_1);
         expected.add(milk1_1);
 
-        Collection<Price> actual = merger.merge(emptySet, newPrices);
+        Set<Price> actual = merger.merge(emptySet, newPrices);
         assertEquals(expected, actual);
 
         actual = merger.merge(currentPrices, emptySet);
@@ -79,7 +78,7 @@ public class PriceMergerTest extends Assert {
         expected.add(milk1_1);
         expected.add(box1_1_otherDate);
 
-        Collection<Price> actual = merger.merge(currentPrices, newPrices);
+        Set<Price> actual = merger.merge(currentPrices, newPrices);
         assertEquals(expected, actual);
     }
 
@@ -89,8 +88,8 @@ public class PriceMergerTest extends Assert {
         HashSet<Price> newPrices = new HashSet<>();
 
         Price box1_1 = new Price(CODE_BOX, 1, 1, getDefaultDate(1), getDefaultDate(30), 1);
-        Price box1_1_from1_to9 = new Price(CODE_BOX, 1, 1, getDefaultDate(1), getDefaultDate(9), 1);
-        Price box1_1_from21_to30 = new Price(CODE_BOX, 1, 1, getDefaultDate(21), getDefaultDate(30), 1);
+        Price box1_1_from1_to10 = new Price(CODE_BOX, 1, 1, getDefaultDate(1), getDefaultDate(10), 1);
+        Price box1_1_from20_to30 = new Price(CODE_BOX, 1, 1, getDefaultDate(20), getDefaultDate(30), 1);
         Price box1_1_from10_to20 = new Price(CODE_BOX, 1, 1, getDefaultDate(10), getDefaultDate(20), 500);
         Price box1_2 = new Price(CODE_BOX, 2, 1, getDefaultDate(1), getDefaultDate(30), 20);
 
@@ -99,12 +98,12 @@ public class PriceMergerTest extends Assert {
         newPrices.add(box1_1_from10_to20);
 
         HashSet<Price> expected = new HashSet<>();
+        expected.add(box1_1_from20_to30);
         expected.add(box1_2);
+        expected.add(box1_1_from1_to10);
         expected.add(box1_1_from10_to20);
-        expected.add(box1_1_from21_to30);
-        expected.add(box1_1_from1_to9);
 
-        Collection<Price> actual = merger.merge(currentPrices, newPrices);
+        Set<Price> actual = merger.merge(currentPrices, newPrices);
         assertEquals(expected, actual);
     }
 
@@ -125,7 +124,7 @@ public class PriceMergerTest extends Assert {
         expected.add(box1_2);
         expected.add(box1_1_from5_to25);
 
-        Collection<Price> actual = merger.merge(currentPrices, newPrices);
+        Set<Price> actual = merger.merge(currentPrices, newPrices);
         assertEquals(expected, actual);
     }
 
@@ -136,37 +135,58 @@ public class PriceMergerTest extends Assert {
         HashSet<Price> expected = new HashSet<>();
 
         Price box1_1_from10_to15 = new Price(CODE_BOX, 1, 1, getDefaultDate(10), getDefaultDate(15), 10);
-        Price box1_1_from5_to11 = new Price(CODE_BOX, 1, 1, getDefaultDate(5), getDefaultDate(11), 10);
+        Price box1_1_from5_to12 = new Price(CODE_BOX, 1, 1, getDefaultDate(5), getDefaultDate(12), 10);
         Price box1_1_from12_to20 = new Price(CODE_BOX, 1, 1, getDefaultDate(12), getDefaultDate(20), 100);
 
+        Price box1_5_from10_to15 = new Price(CODE_BOX, 1, 5, getDefaultDate(5), getDefaultDate(20), 10);
+        Price box1_5_from5_to12 = new Price(CODE_BOX, 1, 5, getDefaultDate(1), getDefaultDate(10), 20);
+        Price box1_5_from12_to20 = new Price(CODE_BOX, 1, 5, getDefaultDate(15), getDefaultDate(25), 100);
+
         currentPrices.add(box1_1_from10_to15);
-        newPrices.add(box1_1_from5_to11);
+        currentPrices.add(box1_5_from10_to15);
+
+        newPrices.add(box1_1_from5_to12);
         newPrices.add(box1_1_from12_to20);
+        newPrices.add(box1_5_from5_to12);
+        newPrices.add(box1_5_from12_to20);
 
-        expected.add(box1_1_from5_to11);
+        expected.add(box1_1_from5_to12);
         expected.add(box1_1_from12_to20);
+        expected.add(box1_5_from5_to12);
+        expected.add(box1_5_from12_to20);
+        expected.add(new Price(CODE_BOX, 1, 5, getDefaultDate(10), getDefaultDate(15), 10));
 
-        Collection<Price> actual = merger.merge(currentPrices, newPrices);
+        Set<Price> actual = merger.merge(currentPrices, newPrices);
         assertEquals(expected, actual);
 
         currentPrices.add(new Price(CODE_BOX, 1, 1, getDefaultDate(18), getDefaultDate(25), 10));
         currentPrices.add(new Price(CODE_BOX, 2, 1, getDefaultDate(18), getDefaultDate(25), 10));
+
         newPrices.add(new Price(CODE_BOX, 2, 1, getDefaultDate(10), getDefaultDate(20), 10));
         newPrices.add(new Price(CODE_BOX, 2, 1, getDefaultDate(24), getDefaultDate(30), 10));
-        expected.add(new Price(CODE_BOX, 1, 1, getDefaultDate(21), getDefaultDate(25), 10));
-        expected.add(new Price(CODE_BOX, 2, 1, getDefaultDate(18), getDefaultDate(30), 10));
+
+        expected.add(new Price(CODE_BOX, 1, 1, getDefaultDate(20), getDefaultDate(25), 10));
+        expected.add(new Price(CODE_BOX, 2, 1, getDefaultDate(10), getDefaultDate(30), 10));
 
         actual = merger.merge(currentPrices, newPrices);
         assertEquals(expected, actual);
 
-        currentPrices.add(new Price(CODE_MILK, 1, 1, getDefaultDate(18), getDefaultDate(25), 10));
-        currentPrices.add(new Price(CODE_MILK, 2, 1, getDefaultDate(18), getDefaultDate(25), 10));
-        newPrices.add(new Price(CODE_MILK, 1, 1, getDefaultDate(24), getDefaultDate(30), 10));
-        newPrices.add(new Price(CODE_MILK, 2, 1, getDefaultDate(24), getDefaultDate(30), 100));
+        currentPrices.add(new Price(CODE_BOX, 1, 1,
+                getDate(DEFAULT_YEAR, Calendar.JANUARY, 18), getDate(DEFAULT_YEAR, Calendar.JANUARY, 25), 10));
+        currentPrices.add(new Price(CODE_BOX, 2, 1,
+                getDate(DEFAULT_YEAR, Calendar.JANUARY, 18), getDate(DEFAULT_YEAR, Calendar.FEBRUARY, 25), 10));
 
-        expected.add(new Price(CODE_MILK, 1, 1, getDefaultDate(18), getDefaultDate(30), 10));
-        expected.add(new Price(CODE_MILK, 2, 1, getDefaultDate(18), getDefaultDate(23), 10));
-        expected.add(new Price(CODE_MILK, 2, 1, getDefaultDate(24), getDefaultDate(30), 100));
+        newPrices.add(new Price(CODE_BOX, 1, 1,
+                getDate(DEFAULT_YEAR, Calendar.JANUARY, 24), getDate(DEFAULT_YEAR, Calendar.JANUARY, 30), 10));
+        newPrices.add(new Price(CODE_BOX, 2, 1,
+                getDate(DEFAULT_YEAR, Calendar.JANUARY, 24), getDate(DEFAULT_YEAR, Calendar.FEBRUARY, 30), 100));
+
+        expected.add(new Price(CODE_BOX, 1, 1,
+                getDate(DEFAULT_YEAR, Calendar.JANUARY, 18), getDate(DEFAULT_YEAR, Calendar.JANUARY, 30), 10));
+        expected.add(new Price(CODE_BOX, 2, 1,
+                getDate(DEFAULT_YEAR, Calendar.JANUARY, 18), getDate(DEFAULT_YEAR, Calendar.JANUARY, 24), 10));
+        expected.add(new Price(CODE_BOX, 2, 1,
+                getDate(DEFAULT_YEAR, Calendar.JANUARY, 24), getDate(DEFAULT_YEAR, Calendar.FEBRUARY, 30), 100));
 
         actual = merger.merge(currentPrices, newPrices);
         assertEquals(expected, actual);
@@ -174,12 +194,14 @@ public class PriceMergerTest extends Assert {
     }
 
     private Date getDefaultDate(int day) {
+        int DEFAULT_MONTH = Calendar.APRIL;
         return getDate(DEFAULT_YEAR, DEFAULT_MONTH, day);
     }
 
     private Date getDate(int year, int month, int day) {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month, day);
+        calendar.set(year, month, day, 0, 0, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
     }
 
