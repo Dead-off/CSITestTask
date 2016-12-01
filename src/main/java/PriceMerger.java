@@ -1,7 +1,7 @@
-import java.util.Collection;
+import java.util.Set;
 
 public interface PriceMerger {
 
-    Collection<Price> merge(Collection<Price> currentPrices, Collection<Price> newPrices);
+    Set<Price> merge(Set<Price> currentPrices, Set<Price> newPrices);
 
 }
